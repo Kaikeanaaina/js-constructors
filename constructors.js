@@ -10,6 +10,16 @@
  * @property {string} description
  * @method   printDetails
  */
+function Spell (name, cost, description){
+
+  this.name = name;
+  this.cost = cost;
+  this.description = description;
+
+
+}
+
+
 
   /**
    * Returns a string of all of the spell's details.
@@ -18,6 +28,10 @@
    * @name getDetails
    * @return {string} details containing all of the spells information.
    */
+
+Spell.prototype.getDetails = function(){
+  return this.name + ", " + this.cost + ", " + this.description;
+};
 
 /**
  * A spell that deals damage.
@@ -44,6 +58,16 @@
  * @property {string} description
  */
 
+
+function DamageSpell(name, cost, damage, description){
+  Spell.call(this,name, cost, description);
+  this.damage = damage;
+}
+
+DamageSpell.prototype = new Spell();
+var damageSpell = new DamageSpell();
+
+
 /**
  * Now that you've created some spells, let's create
  * `Spellcaster` objects that can use them!
@@ -61,6 +85,14 @@
  * @method  invoke
  */
 
+function Spellcaster (name, health, mana){
+  this.name = name;
+  this.health = health;
+  this.mana = mana;
+  this.isAlive = true;
+
+}
+
   /**
    * @method inflictDamage
    *
@@ -72,6 +104,18 @@
    * @param  {number} damage  Amount of damage to deal to the spellcaster
    */
 
+Spellcaster.prototype.inflictDamage = function(damage){
+ this.health -= damage;
+ if(this.health===0){
+  this.isAlive = false;
+ }
+ if(damage>this.health){
+  this.health=0;
+  this.isAlive = false;
+ }
+};
+
+
   /**
    * @method spendMana
    *
@@ -81,6 +125,18 @@
    * @param  {number} cost      The amount of mana to spend.
    * @return {boolean} success  Whether mana was successfully spent.
    */
+
+Spellcaster.prototype.spendMana = function(cost){
+  if(cost<this.mana){
+    this.mana -= cost;
+    return true;
+  }
+
+  if(cost>this.mana){
+    return false;
+  }
+
+};
 
   /**
    * @method invoke
@@ -108,3 +164,49 @@
    * @param  {Spellcaster} target         The spell target to be inflicted.
    * @return {boolean}                    Whether the spell was successfully cast.
    */
+
+   Spellcaster.prototype.invoke = function(spell,target){
+    if(spell instanceof Spell ===true || spell instanceof DamageSpell === true){
+
+      if(this.mana<spell.cost){
+        return false;
+      }
+
+      if(spell instanceof DamageSpell ===true){
+        if(target instanceof Spellcaster === true){
+          this.mana-=spell.cost;
+          target.health-=spell.damage;
+
+
+
+          return true;
+        }
+        else {
+          return false;
+        }
+      }
+
+
+
+
+      this.mana-=spell.cost;
+
+
+    return true;
+
+
+    }
+
+    else {
+    return false;
+  }
+
+   };
+
+
+var loren = new Spellcaster('Loren', 300, 125);
+var gust = new Spell('Gust', loren.mana, 'Creates a gentle breeze.');
+var forcePulse = new DamageSpell('Force Pulse', 5, 10, 'Strikes a foe with a powerful blast, knocking them to the ground.');
+var morty = new Spellcaster('Morty',300,125);
+
+console.log(loren.invoke(gust));
